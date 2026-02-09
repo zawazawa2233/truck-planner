@@ -1,10 +1,20 @@
 {
   "name": "codex-test",
   "version": "1.0.0",
-  "description": "Minimal Node.js project",
-  "main": "index.js",
+  "description": "Notion-like daily report vault",
+  "main": "app.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.5.0",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   },
   "license": "MIT"
 }

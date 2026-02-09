@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>新規作成 | 日報保管庫</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-title">日報保管庫</div>
+        <div class="brand-sub">新規日報</div>
+      </div>
+      <a class="button" href="/">一覧へ戻る</a>
+    </header>
+
+    <main class="container">
+      <section class="form-card">
+        <% if (error) { %>
+          <div class="error"><%= error %></div>
+        <% } %>
+        <form action="/reports" method="POST" enctype="multipart/form-data" class="report-form">
+          <label>
+            日付
+            <input type="date" name="date" value="<%= values.date || '' %>" />
+          </label>
+          <label>
+            都道府県
+            <input type="text" name="prefecture" placeholder="例: 東京都" value="<%= values.prefecture || '' %>" />
+          </label>
+          <label>
+            会社名
+            <input type="text" name="company" placeholder="例: 株式会社サンプル" value="<%= values.company || '' %>" />
+          </label>
+          <label>
+            タイトル
+            <input type="text" name="title" placeholder="例: 週次報告" value="<%= values.title || '' %>" />
+          </label>
+          <label>
+            本文
+            <textarea name="body" rows="8" placeholder="本文を入力"><%= values.body || '' %></textarea>
+          </label>
+          <label>
+            タグ (カンマ区切り)
+            <input type="text" name="tags" placeholder="例: 営業, 進捗" value="<%= values.tags || '' %>" />
+          </label>
+          <label>
+            添付ファイル (jpg / png / pdf)
+            <input type="file" name="files" multiple accept=".jpg,.jpeg,.png,.pdf" />
+          </label>
+          <div class="actions">
+            <button type="submit" class="button primary">保存する</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

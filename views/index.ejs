@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>日報保管庫</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-title">日報保管庫</div>
+        <div class="brand-sub">Notion風のシンプルな日報アーカイブ</div>
+      </div>
+      <a class="button primary" href="/new">新規作成</a>
+    </header>
+
+    <main class="container">
+      <section class="search-panel">
+        <form method="GET" action="/" class="search-form">
+          <input
+            type="text"
+            name="q"
+            placeholder="会社名 / 都道府県 / タグ / 本文で検索"
+            value="<%= q %>"
+          />
+          <button type="submit" class="button">検索</button>
+        </form>
+      </section>
+
+      <section class="report-list">
+        <% if (reports.length === 0) { %>
+          <div class="empty">まだ日報がありません。まずは作成しましょう。</div>
+        <% } %>
+
+        <% reports.forEach((report) => { %>
+          <article class="report-card">
+            <div class="report-meta">
+              <% if (report.date) { %>
+                <span class="chip"><%= report.date %></span>
+              <% } %>
+              <% if (report.prefecture) { %>
+                <span class="chip"><%= report.prefecture %></span>
+              <% } %>
+              <% if (report.company) { %>
+                <span class="chip"><%= report.company %></span>
+              <% } %>
+            </div>
+            <h2 class="report-title">
+              <a href="/reports/<%= report.id %>"><%= report.title || '無題' %></a>
+            </h2>
+            <% if (report.body) { %>
+              <p class="report-body"><%= report.body %></p>
+            <% } %>
+            <% if (report.tags) { %>
+              <div class="tags">
+                <% report.tags.split(',').map(t => t.trim()).filter(Boolean).forEach(tag => { %>
+                  <span class="tag">#<%= tag %></span>
+                <% }) %>
+              </div>
+            <% } %>
+
+            <div class="card-actions">
+              <a class="text-link" href="/reports/<%= report.id %>/edit">編集</a>
+            </div>
+
+            <% const attachments = attachmentsByReport[report.id] || []; %>
+            <% if (attachments.length > 0) { %>
+              <div class="attachment-strip">
+                <% attachments.forEach((file) => { %>
+                  <% if (file.mime_type.startsWith('image/')) { %>
+                    <a class="attachment-thumb" href="/uploads/<%= file.filename %>" target="_blank" rel="noreferrer">
+                      <img src="/uploads/<%= file.filename %>" alt="<%= file.original_name %>" />
+                    </a>
+                  <% } else { %>
+                    <a class="attachment-pdf" href="/uploads/<%= file.filename %>" target="_blank" rel="noreferrer">
+                      PDF: <%= file.original_name %>
+                    </a>
+                  <% } %>
+                <% }) %>
+              </div>
+            <% } %>
+          </article>
+        <% }) %>
+      </section>
+    </main>
+  </body>
+</html>
