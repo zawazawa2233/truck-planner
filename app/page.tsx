@@ -273,37 +273,46 @@ export default function HomePage() {
       {step === 2 && (
         <section className="panel">
           <h2>Step2: 条件チェック</h2>
+          <div className="optionGrid">
+            <div className="optionCard">
+              <h3>休憩ルール</h3>
+              <label className="check"><input type="radio" checked={restStyle === 'SINGLE_30'} onChange={() => setRestStyle('SINGLE_30')} />30分一括</label>
+              <label className="check"><input type="radio" checked={restStyle === 'MULTI_10'} onChange={() => setRestStyle('MULTI_10')} />10分以上×複数で合計30分</label>
+              <label className="check"><input type="checkbox" checked={allowExtendedDrive} onChange={(e) => setAllowExtendedDrive(e.target.checked)} />やむを得ない場合に4時間30分まで許容</label>
+            </div>
 
-          <h3>休憩ルール</h3>
-          <label className="check"><input type="radio" checked={restStyle === 'SINGLE_30'} onChange={() => setRestStyle('SINGLE_30')} />30分一括</label>
-          <label className="check"><input type="radio" checked={restStyle === 'MULTI_10'} onChange={() => setRestStyle('MULTI_10')} />10分以上×複数で合計30分</label>
-          <label className="check"><input type="checkbox" checked={allowExtendedDrive} onChange={(e) => setAllowExtendedDrive(e.target.checked)} />やむを得ない場合に4時間30分まで許容</label>
+            <div className="optionCard">
+              <h3>施設種別</h3>
+              <label className="check"><input type="checkbox" checked={saPa} onChange={(e) => setSaPa(e.target.checked)} />SA/PA</label>
+              <label className="check"><input type="checkbox" checked={expresswayRest} onChange={(e) => setExpresswayRest(e.target.checked)} />高速休憩所</label>
+              <label className="check"><input type="checkbox" checked={michiNoEki} onChange={(e) => setMichiNoEki(e.target.checked)} />道の駅</label>
+            </div>
 
-          <h3>施設種別</h3>
-          <label className="check"><input type="checkbox" checked={saPa} onChange={(e) => setSaPa(e.target.checked)} />SA/PA</label>
-          <label className="check"><input type="checkbox" checked={expresswayRest} onChange={(e) => setExpresswayRest(e.target.checked)} />高速休憩所</label>
-          <label className="check"><input type="checkbox" checked={michiNoEki} onChange={(e) => setMichiNoEki(e.target.checked)} />道の駅</label>
+            <div className="optionCard">
+              <h3>設備</h3>
+              <label className="check"><input type="checkbox" checked={shower} onChange={(e) => setShower(e.target.checked)} />シャワー</label>
+              <label className="check"><input type="checkbox" checked={open24h} onChange={(e) => setOpen24h(e.target.checked)} />24h飲食</label>
+              <label className="check"><input type="checkbox" checked={convenience} onChange={(e) => setConvenience(e.target.checked)} />コンビニ</label>
+              <label className="check"><input type="checkbox" checked={largeParking} onChange={(e) => setLargeParking(e.target.checked)} />大型駐車優先</label>
+            </div>
 
-          <h3>設備</h3>
-          <label className="check"><input type="checkbox" checked={shower} onChange={(e) => setShower(e.target.checked)} />シャワー</label>
-          <label className="check"><input type="checkbox" checked={open24h} onChange={(e) => setOpen24h(e.target.checked)} />24h飲食</label>
-          <label className="check"><input type="checkbox" checked={convenience} onChange={(e) => setConvenience(e.target.checked)} />コンビニ</label>
-          <label className="check"><input type="checkbox" checked={largeParking} onChange={(e) => setLargeParking(e.target.checked)} />大型駐車優先</label>
+            <div className="optionCard">
+              <h3>給油条件</h3>
+              <label className="check"><input type="radio" checked={fuelBrand === 'EW'} onChange={() => setFuelBrand('EW')} />ENEOSウイングのみ</label>
+              <label className="check"><input type="radio" checked={fuelBrand === 'USAMI'} onChange={() => setFuelBrand('USAMI')} />宇佐美のみ</label>
+              <label className="check"><input type="radio" checked={fuelBrand === 'BOTH'} onChange={() => setFuelBrand('BOTH')} />両方</label>
+              <label className="check"><input type="checkbox" checked={prioritizeHighwayStations} onChange={(e) => setPrioritizeHighwayStations(e.target.checked)} />高速道路内SS優先</label>
 
-          <h3>給油条件</h3>
-          <label className="check"><input type="radio" checked={fuelBrand === 'EW'} onChange={() => setFuelBrand('EW')} />ENEOSウイングのみ</label>
-          <label className="check"><input type="radio" checked={fuelBrand === 'USAMI'} onChange={() => setFuelBrand('USAMI')} />宇佐美のみ</label>
-          <label className="check"><input type="radio" checked={fuelBrand === 'BOTH'} onChange={() => setFuelBrand('BOTH')} />両方</label>
-          <label className="check"><input type="checkbox" checked={prioritizeHighwayStations} onChange={(e) => setPrioritizeHighwayStations(e.target.checked)} />高速道路内SS優先</label>
-
-          <div className="rangeRow">
-            <select className="textInput" value={fuelRangePreset} onChange={(e) => setFuelRangePreset(Number(e.target.value) as 50 | 100 | 150 | 200)}>
-              <option value={50}>50km以内</option>
-              <option value={100}>100km以内</option>
-              <option value={150}>150km以内</option>
-              <option value={200}>200km以内</option>
-            </select>
-            <input className="textInput" type="number" value={fuelRangeKm} onChange={(e) => setFuelRangeKm(e.target.value)} placeholder="任意km（例: 120）" />
+              <div className="rangeRow">
+                <select className="textInput" value={fuelRangePreset} onChange={(e) => setFuelRangePreset(Number(e.target.value) as 50 | 100 | 150 | 200)}>
+                  <option value={50}>50km以内</option>
+                  <option value={100}>100km以内</option>
+                  <option value={150}>150km以内</option>
+                  <option value={200}>200km以内</option>
+                </select>
+                <input className="textInput" type="number" value={fuelRangeKm} onChange={(e) => setFuelRangeKm(e.target.value)} placeholder="任意km（例: 120）" />
+              </div>
+            </div>
           </div>
 
           <div className="footerRow">
@@ -349,12 +358,12 @@ export default function HomePage() {
                 );
               })()}
 
-              <h3>休憩候補</h3>
+              <h3 className="sectionTitle">休憩候補</h3>
               <div className="cards">
                 {result.restWindows.flatMap((w) => w.primaryCandidates).slice(0, 8).map((c, idx) => candidateCard(c, `${c.id}-${idx}`))}
               </div>
 
-              <h3>給油候補</h3>
+              <h3 className="sectionTitle">給油候補</h3>
               {result.fuelCandidates.length === 0 && (
                 <p className="meta">給油候補が見つかりませんでした。距離レンジやブランド設定を見直して再試行してください。</p>
               )}
