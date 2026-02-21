@@ -9,6 +9,8 @@
   --soft: #e9f7f3;
   --warn: #7c3e00;
   --warn-bg: #fff0de;
+  --info: #0f4f85;
+  --info-bg: #e7f2ff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,6 +25,8 @@
     --soft: #15272b;
     --warn: #ffd09c;
     --warn-bg: #352615;
+    --info: #a8d8ff;
+    --info-bg: #13293d;
   }
 }
 
@@ -207,6 +211,15 @@ textarea.textInput {
   border: 1px solid color-mix(in srgb, var(--warn), var(--line) 60%);
   background: var(--warn-bg);
   color: var(--warn);
+  border-radius: 12px;
+  padding: 10px;
+  margin: 12px 0;
+}
+
+.infoBox {
+  border: 1px solid color-mix(in srgb, var(--info), var(--line) 60%);
+  background: var(--info-bg);
+  color: var(--info);
   border-radius: 12px;
   padding: 10px;
   margin: 12px 0;

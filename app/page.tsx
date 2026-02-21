@@ -104,6 +104,16 @@ export default function HomePage() {
     return lines.join('\n');
   }
 
+  function isSoftWarning(text: string): boolean {
+    return (
+      text.includes('Overpass') ||
+      text.includes('Google Places') ||
+      text.includes('補完しました') ||
+      text.includes('候補が不足') ||
+      text.includes('seedで継続')
+    );
+  }
+
   async function runPlan() {
     setLoading(true);
     setLoadingLabel('計算中...');
@@ -320,11 +330,24 @@ export default function HomePage() {
                 <button className="btn secondary" type="button" onClick={loadLastResult}>前回結果を再表示</button>
               </div>
 
-              {result.warnings.length > 0 && (
-                <div className="warningBox">
-                  {result.warnings.map((w) => <p key={w}>警告: {w}</p>)}
-                </div>
-              )}
+              {(() => {
+                const infoWarnings = result.warnings.filter(isSoftWarning);
+                const hardWarnings = result.warnings.filter((w) => !isSoftWarning(w));
+                return (
+                  <>
+                    {infoWarnings.length > 0 && (
+                      <div className="infoBox">
+                        {infoWarnings.map((w) => <p key={`i-${w}`}>情報: {w}</p>)}
+                      </div>
+                    )}
+                    {hardWarnings.length > 0 && (
+                      <div className="warningBox">
+                        {hardWarnings.map((w) => <p key={`w-${w}`}>警告: {w}</p>)}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
 
               <h3>休憩候補</h3>
               <div className="cards">

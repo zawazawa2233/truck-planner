@@ -121,6 +121,18 @@ npm run dev
 - `/Users/atsuatsu/Projects/codex-test/docs/iphone-uat-template.md`
 - `/Users/atsuatsu/Projects/codex-test/docs/iphone-uat-run-2026-02-21.md`
 
+## 給油マスター定期更新（GitHub Actions）
+
+- ワークフロー: `/Users/atsuatsu/Projects/codex-test/.github/workflows/stations-update.yml`
+- 実行タイミング: 毎週日曜 03:00 JST（`workflow_dispatch` で手動実行も可）
+- 必須Secrets:
+  - `DATABASE_URL`（Neonなどの本番Postgres）
+- 任意Variables:
+  - `EW_SOURCE_URL`
+  - `USAMI_SOURCE_URL`
+
+設定後は GitHub の Actions タブから `Update Fuel Stations` を一度手動実行し、ログで更新件数を確認してください。
+
 ## ローカル検証
 
 1. `npm run dev`

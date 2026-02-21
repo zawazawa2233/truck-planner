@@ -1,0 +1,38 @@
+name: Update Fuel Stations
+
+on:
+  schedule:
+    - cron: '0 18 * * 0'
+  workflow_dispatch:
+
+jobs:
+  update-stations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run db:generate
+
+      - name: Apply migrations
+        run: npm run db:migrate:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Update station master
+        run: npm run stations:update
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          EW_SOURCE_URL: ${{ vars.EW_SOURCE_URL }}
+          USAMI_SOURCE_URL: ${{ vars.USAMI_SOURCE_URL }}
