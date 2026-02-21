@@ -28,8 +28,8 @@ Vercel Project Settings -> Environment Variables に設定:
 
 ## 4) Data Store Notes
 
-- Vercel Serverless + SQLite は永続性の制約あり
-- 本番では外部DB（Postgres等）を推奨
+- 本番は外部DB（Postgres）を前提にする
+- Prismaマイグレーションを先に適用する（`prisma migrate deploy`）
 - `stations:update` はCIまたは手動ジョブで定期更新
 
 ## 5) Deployment Verification
@@ -56,4 +56,3 @@ Vercel Project Settings -> Environment Variables に設定:
 - APIエラー時にユーザーへ警告が表示される
 - Overpass失敗時にフォールバック警告が表示される
 - ログで `429` / `403`（API制限）を監視
-

@@ -1,3 +1,4 @@
+import { fetchWithTimeout, timeoutErrorLabel } from '@/lib/fetch-timeout';
 const GOOGLE_MAP_HOSTS = ['maps.app.goo.gl', 'www.google.com', 'google.com', 'maps.google.com'];
 
 function isGoogleMapsUrl(input: string): boolean {
@@ -13,10 +14,23 @@ async function expandMapsUrl(inputUrl: string): Promise<string> {
   if (!isGoogleMapsUrl(inputUrl)) {
     throw new Error('Googleマップ共有URLではありません。');
   }
-  const response = await fetch(inputUrl, {
-    method: 'GET',
-    redirect: 'follow'
-  });
+  const timeoutMs = 8000;
+  let response: Response;
+  try {
+    response = await fetchWithTimeout(
+      inputUrl,
+      {
+        method: 'GET',
+        redirect: 'follow'
+      },
+      timeoutMs
+    );
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      throw new Error(timeoutErrorLabel('URL展開', timeoutMs));
+    }
+    throw e;
+  }
   return response.url;
 }
 

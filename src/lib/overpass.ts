@@ -1,6 +1,7 @@
 import { addMinutesIso } from '@/lib/time';
 import { locateOnRoute } from '@/lib/route-helpers';
 import { FacilityEquipmentFilter, FacilityTypeFilter, RouteSummary, StopCandidate } from '@/lib/types';
+import { fetchWithTimeout, timeoutErrorLabel } from '@/lib/fetch-timeout';
 
 type OverpassElement = {
   type: 'node' | 'way' | 'relation';
@@ -91,13 +92,18 @@ export async function fetchRestCandidatesFromOverpass(input: {
 
   let body: OverpassResponse | null = null;
   let lastError = '';
+  const timeoutMs = 8000;
   for (const endpoint of endpoints) {
     try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-        body: query
-      });
+      const res = await fetchWithTimeout(
+        endpoint,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+          body: query
+        },
+        timeoutMs
+      );
       if (!res.ok) {
         lastError = `Overpass API失敗(${endpoint}): ${res.status}`;
         continue;
@@ -105,6 +111,10 @@ export async function fetchRestCandidatesFromOverpass(input: {
       body = (await res.json()) as OverpassResponse;
       break;
     } catch (e) {
+      if (e instanceof Error && e.name === 'AbortError') {
+        lastError = timeoutErrorLabel(`Overpass API失敗(${endpoint})`, timeoutMs);
+        continue;
+      }
       lastError = `Overpass API失敗(${endpoint}): ${e instanceof Error ? e.message : String(e)}`;
     }
   }

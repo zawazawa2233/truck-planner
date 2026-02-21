@@ -2,31 +2,25 @@
 
 Googleマップ共有URLを貼るだけで、ルート沿いの休憩候補とブランド限定給油候補を提案するNext.jsツールです。
 
-## 対応要件
+## 主な機能
 
 - `maps.app.goo.gl` を含むGoogleマップ共有URLをサーバー側で展開し、`origin/destination/waypoints` を抽出
-- 抽出失敗時に備えた「追加経由地（任意）」入力
-- スマホ向け3ステップウィザードUI（Step1 URL入力 / Step2 条件設定 / Step3 結果カード）
-- 各候補カードに `Googleマップで開く` / `住所・名称コピー` ボタン
-- 結果Markdownの一括生成・一括コピー
-- 前回検索結果を端末保存し、オフライン時に再表示
-- PWA対応（ホーム画面追加 / manifest / service worker）
+- 抽出失敗時に備えた追加経由地入力
 - 改善基準告示の考え方に沿った休憩設計
-  - 連続運転4時間以内
-  - 例外モードON時は4時間30分
+  - 連続運転4時間（例外モードONで4時間30分）
   - 休憩スタイル: `30分一括` / `10分以上×複数で合計30分`
-- 給油はブランド縛り
-  - ENEOSウイングのみ / 宇佐美のみ / 両方
-  - 高速道路内SSをマスターに含め、優先表示可能
-- 休憩候補の条件絞り込み
-  - 施設: SA/PA / 高速休憩所 / 道の駅
-  - 設備: シャワー / 24h / コンビニ / 大型駐車
+- 給油ブランド縛り: ENEOSウイング / 宇佐美 / 両方
+- 高速道路内SS優先表示
+- 休憩候補の設備フィルタ（シャワー/24h/コンビニ/大型駐車）
+- スマホ向け3ステップUI + PWA（ホーム画面追加）
+- 前回結果の端末保存・オフライン再表示
+- Markdown一括コピー + 候補個別コピー
 
 ## 技術構成
 
 - Next.js (App Router) + TypeScript
 - API: `/api/plan`
-- DB: SQLite + Prisma
+- DB: PostgreSQL + Prisma（本番安定運用向け）
 - 店舗マスター更新: `scripts/updateStations.mjs`
 
 ## セットアップ
@@ -43,24 +37,22 @@ npm install
 cp .env.example .env
 ```
 
-`.env` の主な項目:
+`.env` 主要項目:
 
-- `DATABASE_URL="file:../data/planner.db"`
-- `GOOGLE_MAPS_API_KEY` (必須: ルート取得に使用)
-- `GOOGLE_PLACES_API_KEY` (任意: 休憩候補のPlaces補完)
-- `OVERPASS_API_URL` (既定: Overpass API)
-- `OVERPASS_API_URLS` (任意: カンマ区切りで複数Overpassエンドポイント指定)
-- `ROUTE_BUFFER_KM` (既定: `8`)
-- APIキーは必ずサーバー環境変数で管理し、クライアント側コードへ埋め込まない
+- `DATABASE_URL`（必須。Postgres接続文字列）
+- `GOOGLE_MAPS_API_KEY`（必須）
+- `GOOGLE_PLACES_API_KEY`（任意）
+- `OVERPASS_API_URLS`（任意）
+- `ROUTE_BUFFER_KM`（任意。既定8）
 
-3. Prismaクライアント生成・DB反映
+3. Prisma
 
 ```bash
 npm run db:generate
-npm run db:push
+npm run db:migrate:deploy
 ```
 
-4. 給油マスター更新
+4. 給油マスター更新（初期投入）
 
 ```bash
 npm run stations:update
@@ -71,15 +63,6 @@ npm run stations:update
 ```bash
 npm run dev
 ```
-
-`http://localhost:3000` を開いて利用します。
-
-## 使い方
-
-1. Googleマップ共有URLを貼り付け
-2. 必要なら追加経由地を入力（カンマ区切り）
-3. 休憩ルール・設備条件・給油ブランド・距離レンジを選択
-4. 「提案を作成」で結果一覧を取得
 
 ## API仕様（要約）
 
@@ -103,95 +86,45 @@ npm run dev
 }
 ```
 
-- `includeRouteDetails=false` を推奨（レスポンス軽量化のため）
+- `includeRouteDetails=false` 推奨（レスポンス軽量化）
+
+## 給油マスター初期化（重要）
+
+- `/api/plan` 起動時に `FuelStation` テーブルをチェック
+- 空の場合は `data/station-seed.json` を自動投入
+- 公式取得（EW/宇佐美）を試行し、取得分をupsert
+- 公式取得失敗時でもseedで候補0件を回避
 
 ## PWA利用
 
-- `https` の公開URLでアクセスすると、iPhoneのSafariから「ホーム画面に追加」が可能
+- `https` の公開URLでアクセスし、iPhone Safariの「ホーム画面に追加」を利用
 - manifest: `/manifest.webmanifest`
 - service worker: `/sw.js`
-- オフライン時は新規検索ではなく「前回結果を表示」を利用
+- 圏外時は新規検索を行わず「前回結果を表示」を利用
 
 ## デプロイ（Vercel）
 
-本番前チェックリスト: `/Users/atsuatsu/Projects/codex-test/docs/vercel-production-checklist.md`
-iPhone受け入れテストシート: `/Users/atsuatsu/Projects/codex-test/docs/iphone-uat-template.md`
-記入例: `/Users/atsuatsu/Projects/codex-test/docs/iphone-uat-sample-filled.md`
-今回URL用実施シート: `/Users/atsuatsu/Projects/codex-test/docs/iphone-uat-run-2026-02-21.md`
-
-
 1. GitHubへpush
 2. VercelでリポジトリをImport
-3. Environment Variablesを設定
-   - `DATABASE_URL`（SQLite運用なら永続ボリューム前提。実運用は外部DB推奨）
-   - `GOOGLE_MAPS_API_KEY`
-   - `GOOGLE_PLACES_API_KEY`（任意）
-   - `OVERPASS_API_URLS`（任意）
-4. Deploy実行
+3. Environment VariablesをProduction/Preview両方に設定
+4. デプロイ
+5. マイグレーション実行（CIまたは手動）
+6. `npm run stations:update` 実行（CIまたは手動）
 
-注意:
-- VercelのServerless + SQLiteは永続性に制約があるため、実運用はPostgres等の外部DBへ移行推奨。
-
-出力例（抜粋）:
-
-```json
-{
-  "status": "ok",
-  "warnings": [],
-  "extractedRouteInput": {
-    "finalExpandedUrl": "https://www.google.com/maps/dir/...",
-    "origin": "東京都江東区",
-    "destination": "愛知県名古屋市",
-    "waypoints": ["浜松SA"]
-  },
-  "route": {
-    "totalDistanceKm": 360.4,
-    "totalDurationMin": 298.2
-  },
-  "restWindows": [
-    {
-      "windowId": 1,
-      "startAfterMin": 210,
-      "endByMin": 240,
-      "targetBreakMin": 30,
-      "primaryCandidates": []
-    }
-  ],
-  "fuelCandidates": [
-    {
-      "name": "ENEOSウイング 浜松SA下りSS",
-      "brand": "EW",
-      "isHighway": true,
-      "distanceFromStartKm": 142.6,
-      "etaIso": "2026-02-20T03:02:00.000Z"
-    }
-  ]
-}
-```
+本番前チェック:
+- `/Users/atsuatsu/Projects/codex-test/docs/vercel-production-checklist.md`
+- `/Users/atsuatsu/Projects/codex-test/docs/iphone-uat-template.md`
+- `/Users/atsuatsu/Projects/codex-test/docs/iphone-uat-run-2026-02-21.md`
 
 ## ローカル検証
 
-1. 開発サーバー起動
+1. `npm run dev`
+2. `examples/plan-request.sample.json` の `mapUrl` を実URLに変更
+3. `scripts/runPlanCurl.sh` 実行
+4. `docs/validation-checklist.md` で確認
 
-```bash
-npm run dev
-```
+## セキュリティ
 
-2. リクエストJSONを編集（`/Users/atsuatsu/Projects/codex-test/examples/plan-request.sample.json` の `mapUrl` を差し替え）
-
-3. API実行
-
-```bash
-/Users/atsuatsu/Projects/codex-test/scripts/runPlanCurl.sh
-```
-
-4. チェックリスト
-
-`/Users/atsuatsu/Projects/codex-test/docs/validation-checklist.md`
-
-## 備考
-
-- 地図表示は行わず、内部でルート距離/時間を計算して一覧表示します。
-- Overpass/公式サイト取得に失敗した場合は警告付きでフォールバック（空候補またはシード）します。
-- 給油の漏れを減らすため、`scripts/updateStations.mjs` で公式サイト由来データをDBへ取り込みます（取得不可時はシード維持）。
-- `data/station-extra.json` を置くと、公式で取り切れない店舗を追加投入できます。
+- APIキーはサーバー環境変数のみで管理
+- クライアントコードにキーを埋め込まない
+- Google CloudでAPI制限（Directions/Places）と利用元制限を設定

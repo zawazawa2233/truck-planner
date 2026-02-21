@@ -161,6 +161,28 @@ async function loadSeed() {
 }
 
 async function upsertStations(stations) {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "FuelStation" (
+      "id" TEXT PRIMARY KEY,
+      "sourceId" TEXT UNIQUE,
+      "brand" TEXT NOT NULL,
+      "name" TEXT NOT NULL,
+      "address" TEXT NOT NULL,
+      "lat" DOUBLE PRECISION NOT NULL,
+      "lng" DOUBLE PRECISION NOT NULL,
+      "isHighway" BOOLEAN NOT NULL DEFAULT false,
+      "service24h" BOOLEAN NOT NULL DEFAULT false,
+      "shower" BOOLEAN NOT NULL DEFAULT false,
+      "convenience" BOOLEAN NOT NULL DEFAULT false,
+      "largeParking" BOOLEAN NOT NULL DEFAULT false,
+      "metadata" TEXT,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+  await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS "FuelStation_brand_idx" ON "FuelStation" ("brand");');
+  await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS "FuelStation_isHighway_idx" ON "FuelStation" ("isHighway");');
+
   for (const station of stations) {
     await prisma.fuelStation.upsert({
       where: { sourceId: station.sourceId },

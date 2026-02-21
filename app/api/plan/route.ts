@@ -6,6 +6,7 @@ import { fetchRestCandidatesFromOverpass } from '@/lib/overpass';
 import { fetchRestCandidatesFromGooglePlaces } from '@/lib/places';
 import { fetchRestCandidatesFromSeed } from '@/lib/rest-seed';
 import { fetchFuelCandidates } from '@/lib/stations';
+import { ensureFuelStationMasterReady } from '@/lib/fuel-bootstrap';
 import { resolveGoogleRouteInput } from '@/lib/url-parser';
 import { PlanRequest, PlanResponse, StopCandidate } from '@/lib/types';
 
@@ -42,6 +43,15 @@ export async function POST(req: NextRequest) {
 
     const input = parsed.data as PlanRequest;
     const includeRouteDetails = input.includeRouteDetails ?? false;
+    const warnings: string[] = [];
+
+    try {
+      const fuelMaster = await ensureFuelStationMasterReady();
+      warnings.push(...fuelMaster.warnings);
+    } catch (e) {
+      warnings.push(`給油マスター初期化に失敗: ${stringifyError(e)}`);
+    }
+
     const routeInput = await resolveGoogleRouteInput(input.mapUrl, input.extraWaypoints ?? []);
     const route = await fetchRouteSummary({
       origin: routeInput.origin,
@@ -49,7 +59,6 @@ export async function POST(req: NextRequest) {
       waypoints: routeInput.waypoints
     });
 
-    const warnings: string[] = [];
     let restCandidates: StopCandidate[] = [];
 
     try {
@@ -147,9 +156,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(payload);
   } catch (e) {
     const message = stringifyError(e);
-    const hint = message.includes('GOOGLE_MAPS_API_KEY')
-      ? '`.env` の GOOGLE_MAPS_API_KEY を設定してください。'
-      : 'URL解析失敗時は追加経由地を入力して再実行してください。';
+    let hint = 'URL解析失敗時は追加経由地を入力して再実行してください。';
+    if (message.includes('GOOGLE_MAPS_API_KEY')) {
+      hint = '`.env` の GOOGLE_MAPS_API_KEY を設定してください。';
+    } else if (message.includes('DATABASE_URL') || message.includes('datasource') || message.includes('FuelStation')) {
+      hint = 'DATABASE_URL を外部Postgresに設定し、マイグレーション後に再実行してください。';
+    }
     return NextResponse.json(
       {
         error: message,

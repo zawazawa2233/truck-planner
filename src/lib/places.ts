@@ -1,6 +1,7 @@
 import { addMinutesIso } from '@/lib/time';
 import { locateOnRoute } from '@/lib/route-helpers';
 import { FacilityEquipmentFilter, FacilityTypeFilter, RouteSummary, StopCandidate } from '@/lib/types';
+import { fetchWithTimeout, timeoutErrorLabel } from '@/lib/fetch-timeout';
 
 type NearbyResult = {
   place_id: string;
@@ -100,7 +101,8 @@ async function fetchPlaceDetails(key: string, placeId: string): Promise<PlaceDet
     url.searchParams.set('fields', 'name,formatted_address,types,opening_hours');
     url.searchParams.set('key', key);
 
-    const res = await fetch(url.toString());
+    const timeoutMs = 8000;
+    const res = await fetchWithTimeout(url.toString(), undefined, timeoutMs);
     if (!res.ok) return undefined;
     const body = (await res.json()) as PlaceDetailsResponse;
     if (body.status !== 'OK') return undefined;
@@ -140,6 +142,7 @@ export async function fetchRestCandidatesFromGooglePlaces(input: {
   const keywords = buildKeywords(input.facilityTypes);
   const all: StopCandidate[] = [];
   const seen = new Set<string>();
+  const timeoutMs = 8000;
 
   for (const p of points) {
     for (const kw of keywords) {
@@ -150,7 +153,15 @@ export async function fetchRestCandidatesFromGooglePlaces(input: {
       url.searchParams.set('keyword', kw);
       url.searchParams.set('key', key);
 
-      const res = await fetch(url.toString());
+      let res: Response;
+      try {
+        res = await fetchWithTimeout(url.toString(), undefined, timeoutMs);
+      } catch (e) {
+        if (e instanceof Error && e.name === 'AbortError') {
+          throw new Error(timeoutErrorLabel('Places NearbySearch', timeoutMs));
+        }
+        throw e;
+      }
       if (!res.ok) continue;
       const body = (await res.json()) as NearbyResponse;
       if (body.status !== 'OK' && body.status !== 'ZERO_RESULTS') continue;

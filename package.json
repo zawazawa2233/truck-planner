@@ -10,6 +10,8 @@
     "lint": "next lint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
     "stations:update": "node scripts/updateStations.mjs"
   },
   "dependencies": {

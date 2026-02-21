@@ -134,11 +134,15 @@ export default function HomePage() {
         fuelRangeKm: fuelRangeKm ? Number(fuelRangeKm) : undefined
       };
 
+      const controller = new AbortController();
+      const timeoutMs = 25000;
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
       const res = await fetch('/api/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+        body: JSON.stringify(body),
+        signal: controller.signal
+      }).finally(() => clearTimeout(timer));
 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'APIエラー');
@@ -152,7 +156,11 @@ export default function HomePage() {
       setSavedAt(saved.generatedAt);
     } catch (err) {
       setResult(null);
-      setError(err instanceof Error ? err.message : '不明なエラー');
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('検索がタイムアウトしました。回線状態を確認して再試行してください。');
+      } else {
+        setError(err instanceof Error ? err.message : '不明なエラー');
+      }
     } finally {
       setLoading(false);
     }
@@ -304,6 +312,9 @@ export default function HomePage() {
               </div>
 
               <h3>給油候補</h3>
+              {result.fuelCandidates.length === 0 && (
+                <p className="meta">給油候補が見つかりませんでした。距離レンジやブランド設定を見直して再試行してください。</p>
+              )}
               <div className="cards">
                 {result.fuelCandidates.map((c, idx) => candidateCard(c, `${c.id}-${idx}`))}
               </div>

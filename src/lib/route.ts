@@ -1,5 +1,6 @@
 import { decodePolyline, haversineKm } from '@/lib/geo';
 import { RoutePoint, RouteSummary } from '@/lib/types';
+import { fetchWithTimeout, timeoutErrorLabel } from '@/lib/fetch-timeout';
 
 type DirectionsResponse = {
   status: string;
@@ -63,7 +64,16 @@ export async function fetchRouteSummary(input: {
   url.searchParams.set('region', 'jp');
   url.searchParams.set('key', key);
 
-  const res = await fetch(url.toString());
+  const timeoutMs = 12000;
+  let res: Response;
+  try {
+    res = await fetchWithTimeout(url.toString(), undefined, timeoutMs);
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      throw new Error(timeoutErrorLabel('Directions API', timeoutMs));
+    }
+    throw e;
+  }
   if (!res.ok) {
     throw new Error(`Directions API呼び出し失敗: ${res.status}`);
   }
