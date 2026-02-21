@@ -1,20 +1,33 @@
 {
-  "name": "codex-test",
+  "name": "truck-break-fuel-planner",
   "version": "1.0.0",
-  "description": "Notion-like daily report vault",
-  "main": "app.js",
+  "private": true,
+  "description": "Google Maps URL based truck rest/fuel planner",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "stations:update": "node scripts/updateStations.mjs"
   },
   "dependencies": {
-    "better-sqlite3": "^11.5.0",
-    "ejs": "^3.1.10",
-    "express": "^4.19.2",
-    "multer": "^1.4.5-lts.1"
+    "@prisma/client": "^6.4.1",
+    "next": "^15.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "@types/node": "^22.13.4",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "eslint": "^9.20.1",
+    "eslint-config-next": "^15.2.0",
+    "prisma": "^6.4.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
   },
   "license": "MIT"
 }

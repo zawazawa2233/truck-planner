@@ -1,0 +1,92 @@
+[
+  {
+    "id": "rest-seed-yoro-sa-up",
+    "name": "養老SA（上り）",
+    "address": "岐阜県養老郡養老町",
+    "lat": 35.2861,
+    "lng": 136.5797,
+    "isHighway": true,
+    "tags": ["SA/PA"],
+    "equipment": {"shower": false, "open24h": true, "convenience": true, "largeParking": true}
+  },
+  {
+    "id": "rest-seed-suita-sa-up",
+    "name": "吹田SA（上り）",
+    "address": "大阪府吹田市岸部北",
+    "lat": 34.7939,
+    "lng": 135.5362,
+    "isHighway": true,
+    "tags": ["SA/PA"],
+    "equipment": {"shower": false, "open24h": true, "convenience": true, "largeParking": true}
+  },
+  {
+    "id": "rest-seed-mitsuishi-pa",
+    "name": "三木SA（上り）",
+    "address": "兵庫県三木市大村",
+    "lat": 34.801,
+    "lng": 134.966,
+    "isHighway": true,
+    "tags": ["SA/PA"],
+    "equipment": {"shower": true, "open24h": true, "convenience": true, "largeParking": true}
+  },
+  {
+    "id": "rest-seed-awa-ichinomiya-pa",
+    "name": "淡河PA",
+    "address": "兵庫県神戸市北区",
+    "lat": 34.8635,
+    "lng": 135.0907,
+    "isHighway": true,
+    "tags": ["高速休憩所"],
+    "equipment": {"shower": false, "open24h": true, "convenience": true, "largeParking": true}
+  },
+  {
+    "id": "rest-seed-tatsuno-nishi-sa",
+    "name": "龍野西SA",
+    "address": "兵庫県たつの市揖西町",
+    "lat": 34.8382,
+    "lng": 134.5569,
+    "isHighway": true,
+    "tags": ["SA/PA"],
+    "equipment": {"shower": true, "open24h": true, "convenience": true, "largeParking": true}
+  },
+  {
+    "id": "rest-seed-kibi-sa",
+    "name": "吉備SA",
+    "address": "岡山県岡山市北区今岡",
+    "lat": 34.6824,
+    "lng": 133.8696,
+    "isHighway": true,
+    "tags": ["SA/PA"],
+    "equipment": {"shower": true, "open24h": true, "convenience": true, "largeParking": true}
+  },
+  {
+    "id": "rest-seed-awaji-window1-a",
+    "name": "淡路島南PA",
+    "address": "兵庫県南あわじ市",
+    "lat": 34.31635,
+    "lng": 134.76184,
+    "isHighway": true,
+    "tags": ["SA/PA", "高速休憩所"],
+    "equipment": {"shower": false, "open24h": true, "convenience": true, "largeParking": true}
+  },
+  {
+    "id": "rest-seed-awaji-window1-b",
+    "name": "淡路島南PA（予備）",
+    "address": "兵庫県南あわじ市",
+    "lat": 34.30282,
+    "lng": 134.74158,
+    "isHighway": true,
+    "tags": ["SA/PA", "高速休憩所"],
+    "equipment": {"shower": false, "open24h": true, "convenience": true, "largeParking": true}
+  },
+  {
+    "id": "rest-seed-yononaka-michinoeki",
+    "name": "道の駅 みま",
+    "address": "愛媛県宇和島市三間町務田",
+    "lat": 33.2873,
+    "lng": 132.5965,
+    "isHighway": false,
+    "tags": ["道の駅"],
+    "equipment": {"shower": false, "open24h": false, "convenience": false, "largeParking": true}
+  }
+]

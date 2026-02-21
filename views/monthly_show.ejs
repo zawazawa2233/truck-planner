@@ -3,48 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title><%= report.title %> | 日報保管庫</title>
+    <title><%= monthlyReport.ym %> | 月報詳細</title>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <header class="app-header">
       <div class="brand">
         <div class="brand-title">日報保管庫</div>
-        <div class="brand-sub">日報詳細</div>
+        <div class="brand-sub">月報詳細</div>
       </div>
       <div class="header-links">
-        <a class="button" href="/monthly">月報</a>
-        <a class="button" href="/">一覧へ戻る</a>
+        <a class="button" href="/monthly">月報一覧</a>
+        <a class="button" href="/">日報一覧</a>
       </div>
     </header>
 
     <main class="container">
       <article class="report-detail">
         <div class="report-meta">
-          <% if (report.date) { %>
-            <span class="chip"><%= report.date %></span>
-          <% } %>
-          <% if (report.prefecture) { %>
-            <span class="chip"><%= report.prefecture %></span>
-          <% } %>
-          <% if (report.company) { %>
-            <span class="chip"><%= report.company %></span>
-          <% } %>
+          <span class="chip"><%= monthlyReport.ym %></span>
         </div>
-        <h1><%= report.title || '無題' %></h1>
-        <% if (report.tags) { %>
-          <div class="tags">
-            <% report.tags.split(',').map(t => t.trim()).filter(Boolean).forEach(tag => { %>
-              <span class="tag">#<%= tag %></span>
-            <% }) %>
-          </div>
-        <% } %>
-        <% if (report.body) { %>
-          <p class="report-body"><%= report.body %></p>
+        <h1><%= monthlyReport.title || '無題の月報' %></h1>
+        <% if (monthlyReport.body) { %>
+          <p class="report-body"><%= monthlyReport.body %></p>
         <% } %>
 
         <div class="card-actions">
-          <a class="text-link" href="/reports/<%= report.id %>/edit">編集</a>
+          <a class="text-link" href="/monthly/<%= monthlyReport.ym %>/edit">編集</a>
         </div>
 
         <section class="attachments">
@@ -65,12 +50,7 @@
                     <div class="attachment-name"><%= file.original_name %></div>
                   </button>
                 <% } else { %>
-                  <a
-                    class="attachment-card pdf"
-                    href="/uploads/<%= file.filename %>"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                  <a class="attachment-card pdf" href="/uploads/<%= file.filename %>" target="_blank" rel="noreferrer">
                     <div class="pdf-label">PDF</div>
                     <div class="attachment-name"><%= file.original_name %></div>
                   </a>
@@ -78,6 +58,18 @@
               <% }) %>
             </div>
           <% } %>
+        </section>
+
+        <section class="calendar-section">
+          <h2><%= monthlyReport.ym %> カレンダー</h2>
+          <div class="calendar-grid">
+            <% calendar.forEach((item) => { %>
+              <a class="calendar-day <%= item.hasReport ? 'has-report' : 'no-report' %>" href="<%= item.url %>">
+                <span class="day-number"><%= item.day %></span>
+                <span class="day-label"><%= item.hasReport ? '日報あり' : '新規作成' %></span>
+              </a>
+            <% }) %>
+          </div>
         </section>
       </article>
     </main>

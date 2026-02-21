@@ -1,0 +1,80 @@
+[
+  {
+    "sourceId": "seed-ew-ebina-up",
+    "brand": "EW",
+    "name": "ENEOSウイング 海老名SA上りSS",
+    "address": "神奈川県海老名市大谷南5-2-1",
+    "lat": 35.4464,
+    "lng": 139.3915,
+    "isHighway": true,
+    "service24h": true,
+    "shower": false,
+    "convenience": true,
+    "largeParking": true
+  },
+  {
+    "sourceId": "seed-ew-yoro-up",
+    "brand": "EW",
+    "name": "ENEOSウイング 養老SA上りSS",
+    "address": "岐阜県養老郡養老町橋爪",
+    "lat": 35.2795,
+    "lng": 136.5781,
+    "isHighway": true,
+    "service24h": true,
+    "shower": false,
+    "convenience": true,
+    "largeParking": true
+  },
+  {
+    "sourceId": "seed-usami-kyoto-minami",
+    "brand": "USAMI",
+    "name": "宇佐美 京都南インターSS",
+    "address": "京都府京都市伏見区中島中道町",
+    "lat": 34.9388,
+    "lng": 135.7431,
+    "isHighway": false,
+    "service24h": true,
+    "shower": true,
+    "convenience": false,
+    "largeParking": true
+  },
+  {
+    "sourceId": "seed-usami-komaki",
+    "brand": "USAMI",
+    "name": "宇佐美 小牧SS",
+    "address": "愛知県小牧市小木東",
+    "lat": 35.289,
+    "lng": 136.901,
+    "isHighway": false,
+    "service24h": true,
+    "shower": false,
+    "convenience": false,
+    "largeParking": true
+  },
+  {
+    "sourceId": "seed-usami-yokkaichi",
+    "brand": "USAMI",
+    "name": "宇佐美 23号四日市SS",
+    "address": "三重県四日市市天カ須賀4-7-17",
+    "lat": 34.9902,
+    "lng": 136.6598,
+    "isHighway": false,
+    "service24h": true,
+    "shower": true,
+    "convenience": false,
+    "largeParking": true
+  },
+  {
+    "sourceId": "seed-ew-tomei-hamada",
+    "brand": "EW",
+    "name": "ENEOSウイング 浜松SA下りSS",
+    "address": "静岡県浜松市浜名区都田町7822-7",
+    "lat": 34.8248,
+    "lng": 137.7607,
+    "isHighway": true,
+    "service24h": true,
+    "shower": true,
+    "convenience": true,
+    "largeParking": true
+  }
+]

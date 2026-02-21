@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0f1a1d"/>
+  <rect x="50" y="258" width="412" height="138" rx="36" fill="#1e9f86"/>
+  <rect x="92" y="192" width="240" height="102" rx="22" fill="#d8fff1"/>
+  <circle cx="150" cy="414" r="40" fill="#d8fff1"/>
+  <circle cx="366" cy="414" r="40" fill="#d8fff1"/>
+  <text x="256" y="132" text-anchor="middle" font-size="64" fill="#d8fff1" font-family="sans-serif">運行</text>
+</svg>

@@ -1,0 +1,24 @@
+{
+  "name": "トラック休憩・給油プランナー",
+  "short_name": "運行プランナー",
+  "description": "Googleマップ共有URLから休憩/給油候補を提案",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1a1d",
+  "theme_color": "#0f1a1d",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

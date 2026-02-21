@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>月報一覧 | 日報保管庫</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-title">日報保管庫</div>
+        <div class="brand-sub">月報一覧</div>
+      </div>
+      <div class="header-links">
+        <a class="button" href="/">日報一覧</a>
+        <a class="button primary" href="/monthly/new">月報を新規作成</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="report-list">
+        <% if (monthlyReports.length === 0) { %>
+          <div class="empty">月報はまだありません。</div>
+        <% } %>
+
+        <% monthlyReports.forEach((monthly) => { %>
+          <article class="report-card">
+            <div class="report-meta">
+              <span class="chip"><%= monthly.ym %></span>
+            </div>
+            <h2 class="report-title">
+              <a href="/monthly/<%= monthly.ym %>"><%= monthly.title || '無題の月報' %></a>
+            </h2>
+            <% if (monthly.body) { %>
+              <p class="report-body"><%= monthly.body %></p>
+            <% } %>
+            <div class="card-actions">
+              <a class="text-link" href="/monthly/<%= monthly.ym %>">詳細</a>
+              <a class="text-link" href="/monthly/<%= monthly.ym %>/edit">編集</a>
+            </div>
+          </article>
+        <% }) %>
+      </section>
+    </main>
+  </body>
+</html>

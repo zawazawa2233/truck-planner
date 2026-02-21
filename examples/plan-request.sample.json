@@ -1,0 +1,22 @@
+{
+  "mapUrl": "https://maps.app.goo.gl/REPLACE_WITH_YOUR_SHARED_URL",
+  "departAtIso": "2026-02-20T08:00:00.000Z",
+  "extraWaypoints": [],
+  "includeRouteDetails": false,
+  "allowExtendedDrive": false,
+  "restStyle": "SINGLE_30",
+  "facilityTypes": {
+    "saPa": true,
+    "expresswayRest": true,
+    "michiNoEki": true
+  },
+  "equipment": {
+    "shower": false,
+    "open24h": false,
+    "convenience": false,
+    "largeParking": true
+  },
+  "fuelBrand": "BOTH",
+  "prioritizeHighwayStations": true,
+  "fuelRangePreset": 100
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>月報新規作成 | 日報保管庫</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-title">日報保管庫</div>
+        <div class="brand-sub">月報作成</div>
+      </div>
+      <div class="header-links">
+        <a class="button" href="/monthly">月報一覧へ戻る</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="form-card">
+        <% if (error) { %>
+          <div class="error"><%= error %></div>
+        <% } %>
+        <form action="/monthly" method="POST" enctype="multipart/form-data" class="report-form">
+          <label>
+            月 (YYYY-MM)
+            <input type="month" name="ym" value="<%= values.ym || '' %>" required />
+          </label>
+          <label>
+            タイトル
+            <input type="text" name="title" value="<%= values.title || '' %>" placeholder="例: 2026年2月 月報" />
+          </label>
+          <label>
+            本文
+            <textarea name="body" rows="10" placeholder="月報本文を入力"><%= values.body || '' %></textarea>
+          </label>
+          <label>
+            添付ファイル (jpg / png / pdf)
+            <input type="file" name="files" multiple accept=".jpg,.jpeg,.png,.pdf" />
+          </label>
+          <div class="actions">
+            <button type="submit" class="button primary">保存する</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

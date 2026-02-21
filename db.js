@@ -42,6 +42,30 @@ const initDb = async () => {
   );
 
   await run(
+    `CREATE TABLE IF NOT EXISTS monthly_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ym TEXT NOT NULL UNIQUE,
+      title TEXT,
+      body TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`
+  );
+
+  await run(
+    `CREATE TABLE IF NOT EXISTS monthly_attachments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      monthly_report_id INTEGER NOT NULL,
+      filename TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      size INTEGER NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (monthly_report_id) REFERENCES monthly_reports(id)
+    )`
+  );
+
+  await run(
     "CREATE INDEX IF NOT EXISTS idx_reports_date ON reports(date DESC)"
   );
   await run(
@@ -49,6 +73,9 @@ const initDb = async () => {
   );
   await run(
     "CREATE INDEX IF NOT EXISTS idx_reports_prefecture ON reports(prefecture)"
+  );
+  await run(
+    "CREATE INDEX IF NOT EXISTS idx_monthly_reports_ym ON monthly_reports(ym DESC)"
   );
 };
 
