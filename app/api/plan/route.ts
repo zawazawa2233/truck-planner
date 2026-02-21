@@ -7,8 +7,8 @@ import { fetchRestCandidatesFromGooglePlaces } from '@/lib/places';
 import { fetchRestCandidatesFromSeed } from '@/lib/rest-seed';
 import { fetchFuelCandidates } from '@/lib/stations';
 import { ensureFuelStationMasterReady } from '@/lib/fuel-bootstrap';
-import { resolveGoogleRouteInput } from '@/lib/url-parser';
-import { PlanRequest, PlanResponse, StopCandidate } from '@/lib/types';
+import { buildFallbackRouteInputFromCoords, resolveGoogleRouteInput } from '@/lib/url-parser';
+import { PlanRequest, PlanResponse, RouteSummary, StopCandidate } from '@/lib/types';
 
 const requestSchema = z.object({
   mapUrl: z.string().url(),
@@ -53,11 +53,28 @@ export async function POST(req: NextRequest) {
     }
 
     const routeInput = await resolveGoogleRouteInput(input.mapUrl, input.extraWaypoints ?? []);
-    const route = await fetchRouteSummary({
-      origin: routeInput.origin,
-      destination: routeInput.destination,
-      waypoints: routeInput.waypoints
-    });
+    let route: RouteSummary;
+    try {
+      route = await fetchRouteSummary({
+        origin: routeInput.origin,
+        destination: routeInput.destination,
+        waypoints: routeInput.waypoints
+      });
+    } catch (e) {
+      const message = stringifyError(e);
+      const shouldRetry = /NOT_FOUND|ZERO_RESULTS/.test(message);
+      if (!shouldRetry) throw e;
+
+      const fallback = buildFallbackRouteInputFromCoords(routeInput.expandedUrl, routeInput.waypoints);
+      if (!fallback) {
+        throw new Error(
+          'Googleマップ共有URLから地点抽出に失敗しました。追加経由地に出発地/到着地を入力して再実行してください。'
+        );
+      }
+
+      route = await fetchRouteSummary(fallback);
+      warnings.push('URL補正でルート再取得しました（座標フォールバック）。');
+    }
 
     let restCandidates: StopCandidate[] = [];
 
@@ -159,6 +176,10 @@ export async function POST(req: NextRequest) {
     let hint = 'URL解析失敗時は追加経由地を入力して再実行してください。';
     if (message.includes('GOOGLE_MAPS_API_KEY')) {
       hint = '`.env` の GOOGLE_MAPS_API_KEY を設定してください。';
+    } else if (message.includes('REQUEST_DENIED') || message.includes('API key is expired')) {
+      hint = 'Google APIキーの有効期限・API制限（Directions/Places）・請求設定を確認してください。';
+    } else if (message.includes('NOT_FOUND') || message.includes('ZERO_RESULTS')) {
+      hint = 'Googleマップ共有URLから地点抽出に失敗しました。追加経由地に出発地/到着地を入力して再実行してください。';
     } else if (message.includes('DATABASE_URL') || message.includes('datasource') || message.includes('FuelStation')) {
       hint = 'DATABASE_URL を外部Postgresに設定し、マイグレーション後に再実行してください。';
     }

@@ -38,13 +38,33 @@ function sanitizeSegment(segment: string): string {
   return decodeURIComponent(segment).replace(/\+/g, ' ').trim();
 }
 
-function parseFromPath(pathname: string): { origin?: string; destination?: string; waypoints: string[] } {
+function isRouteTailSegment(segment: string): boolean {
+  if (!segment) return true;
+  const lower = segment.toLowerCase();
+  if (lower.startsWith('@')) return true;
+  if (lower.includes('data=!')) return true;
+  if (/^[a-z]{1,4}=/.test(lower)) return true; // am=t など
+  if (lower === 'data') return true;
+  return false;
+}
+
+export function extractPathStops(pathname: string): string[] {
   const segments = pathname.split('/').filter(Boolean);
   const dirIdx = segments.findIndex((seg) => seg === 'dir');
-  if (dirIdx === -1) {
-    return { waypoints: [] };
+  if (dirIdx === -1) return [];
+
+  const routeSegments: string[] = [];
+  for (const seg of segments.slice(dirIdx + 1)) {
+    const s = sanitizeSegment(seg);
+    if (!s) continue;
+    if (isRouteTailSegment(s)) break;
+    routeSegments.push(s);
   }
-  const routeSegments = segments.slice(dirIdx + 1).map(sanitizeSegment).filter(Boolean);
+  return routeSegments;
+}
+
+function parseFromPath(pathname: string): { origin?: string; destination?: string; waypoints: string[] } {
+  const routeSegments = extractPathStops(pathname);
   if (routeSegments.length < 2) {
     return { waypoints: [] };
   }
@@ -73,6 +93,34 @@ function parseFromQuery(url: URL): { origin?: string; destination?: string; wayp
     .filter(Boolean);
 
   return { origin, destination, waypoints };
+}
+
+export function extractLatLngPairsFromData(expandedUrl: string): Array<{ lat: number; lng: number }> {
+  const out: Array<{ lat: number; lng: number }> = [];
+  const regex = /!1d(-?\d+(?:\.\d+)?)!2d(-?\d+(?:\.\d+)?)/g;
+  for (const m of expandedUrl.matchAll(regex)) {
+    const lng = Number(m[1]);
+    const lat = Number(m[2]);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+    out.push({ lat, lng });
+  }
+  return out;
+}
+
+export function buildFallbackRouteInputFromCoords(
+  expandedUrl: string,
+  waypoints: string[] = []
+): { origin: string; destination: string; waypoints: string[] } | null {
+  const pairs = extractLatLngPairsFromData(expandedUrl);
+  if (pairs.length < 2) return null;
+  const origin = `${pairs[0].lat},${pairs[0].lng}`;
+  const last = pairs[pairs.length - 1];
+  const destination = `${last.lat},${last.lng}`;
+  return {
+    origin,
+    destination,
+    waypoints
+  };
 }
 
 export async function resolveGoogleRouteInput(rawUrl: string, extraWaypoints: string[] = []) {
