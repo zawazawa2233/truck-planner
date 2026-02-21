@@ -305,12 +305,12 @@ export default function HomePage() {
 
               <div className="rangeRow">
                 <select className="textInput" value={fuelRangePreset} onChange={(e) => setFuelRangePreset(Number(e.target.value) as 50 | 100 | 150 | 200)}>
-                  <option value={50}>50km以内</option>
-                  <option value={100}>100km以内</option>
-                  <option value={150}>150km以内</option>
-                  <option value={200}>200km以内</option>
+                  <option value={50}>優先: 50km付近</option>
+                  <option value={100}>優先: 100km付近</option>
+                  <option value={150}>優先: 150km付近</option>
+                  <option value={200}>優先: 200km付近</option>
                 </select>
-                <input className="textInput" type="number" value={fuelRangeKm} onChange={(e) => setFuelRangeKm(e.target.value)} placeholder="任意km（例: 120）" />
+                <input className="textInput" type="number" value={fuelRangeKm} onChange={(e) => setFuelRangeKm(e.target.value)} placeholder="任意km（優先距離、例: 120）" />
               </div>
             </div>
           </div>
