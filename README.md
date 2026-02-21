@@ -43,6 +43,7 @@ cp .env.example .env
 - `GOOGLE_MAPS_API_KEY`（必須）
 - `GOOGLE_PLACES_API_KEY`（任意）
 - `OVERPASS_API_URLS`（任意）
+- `OVERPASS_TIMEOUT_MS`（任意。既定12000）
 - `ROUTE_BUFFER_KM`（任意。既定8）
 
 3. Prisma

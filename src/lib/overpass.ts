@@ -78,21 +78,18 @@ export async function fetchRestCandidatesFromOverpass(input: {
   facilityTypes: FacilityTypeFilter;
   equipment: FacilityEquipmentFilter;
 }): Promise<StopCandidate[]> {
-  const endpoints = (
+  const endpoints = buildEndpointPriorityList(
     process.env.OVERPASS_API_URLS ??
-    process.env.OVERPASS_API_URL ??
-    'https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter'
-  )
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
+      process.env.OVERPASS_API_URL ??
+      'https://overpass.kumi.systems/api/interpreter,https://overpass-api.de/api/interpreter'
+  );
   const radiusKm = Number(process.env.ROUTE_BUFFER_KM ?? '8');
   const radiusM = Math.round(radiusKm * 1000);
   const query = buildQuery(input.route, radiusM);
 
   let body: OverpassResponse | null = null;
   let lastError = '';
-  const timeoutMs = 8000;
+  const timeoutMs = Number(process.env.OVERPASS_TIMEOUT_MS ?? '12000');
   for (const endpoint of endpoints) {
     try {
       const res = await fetchWithTimeout(
@@ -163,6 +160,26 @@ export async function fetchRestCandidatesFromOverpass(input: {
   }
 
   return out.sort((a, b) => a.distanceFromStartKm - b.distanceFromStartKm);
+}
+
+function buildEndpointPriorityList(raw: string): string[] {
+  const endpoints = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const priorityHosts = ['overpass.kumi.systems', 'overpass-api.de', 'lz4.overpass-api.de', 'z.overpass-api.de'];
+
+  return endpoints.sort((a, b) => hostPriorityScore(a, priorityHosts) - hostPriorityScore(b, priorityHosts));
+}
+
+function hostPriorityScore(endpoint: string, priorities: string[]): number {
+  try {
+    const host = new URL(endpoint).hostname;
+    const idx = priorities.findIndex((p) => host.includes(p));
+    return idx === -1 ? priorities.length + 1 : idx;
+  } catch {
+    return priorities.length + 2;
+  }
 }
 
 function matchTypeFilter(
