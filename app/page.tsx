@@ -37,6 +37,7 @@ export default function HomePage() {
   const [largeParking, setLargeParking] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [loadingLabel, setLoadingLabel] = useState('計算中...');
   const [error, setError] = useState('');
   const [result, setResult] = useState<PlanResponse | null>(null);
   const [savedAt, setSavedAt] = useState<string>('');
@@ -105,6 +106,7 @@ export default function HomePage() {
 
   async function runPlan() {
     setLoading(true);
+    setLoadingLabel('計算中...');
     setError('');
 
     if (!navigator.onLine) {
@@ -134,15 +136,17 @@ export default function HomePage() {
         fuelRangeKm: fuelRangeKm ? Number(fuelRangeKm) : undefined
       };
 
-      const controller = new AbortController();
-      const timeoutMs = 25000;
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      const res = await fetch('/api/plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: controller.signal
-      }).finally(() => clearTimeout(timer));
+      let res: Response;
+      try {
+        res = await fetchPlanWithTimeout(body, 28000);
+      } catch (firstErr) {
+        if (firstErr instanceof Error && firstErr.name === 'AbortError') {
+          setLoadingLabel('再試行中...');
+          res = await fetchPlanWithTimeout(body, 36000);
+        } else {
+          throw firstErr;
+        }
+      }
 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'APIエラー');
@@ -157,12 +161,28 @@ export default function HomePage() {
     } catch (err) {
       setResult(null);
       if (err instanceof Error && err.name === 'AbortError') {
-        setError('検索がタイムアウトしました。回線状態を確認して再試行してください。');
+        setError('検索がタイムアウトしました（自動再試行後）。回線状態を確認して再試行してください。');
       } else {
         setError(err instanceof Error ? err.message : '不明なエラー');
       }
     } finally {
       setLoading(false);
+      setLoadingLabel('計算中...');
+    }
+  }
+
+  async function fetchPlanWithTimeout(body: object, timeoutMs: number): Promise<Response> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch('/api/plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timer);
     }
   }
 
@@ -278,7 +298,7 @@ export default function HomePage() {
 
           <div className="footerRow">
             <button className="btn ghost" type="button" onClick={() => setStep(1)}>戻る</button>
-            <button className="btn" type="button" disabled={loading || !mapUrl} onClick={runPlan}>{loading ? '計算中...' : '結果を作成'}</button>
+            <button className="btn" type="button" disabled={loading || !mapUrl} onClick={runPlan}>{loading ? loadingLabel : '結果を作成'}</button>
           </div>
         </section>
       )}

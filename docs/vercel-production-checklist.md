@@ -14,6 +14,11 @@ Vercel Project Settings -> Environment Variables に設定:
 - `GOOGLE_MAPS_API_KEY`
 - `GOOGLE_PLACES_API_KEY`（任意）
 - `OVERPASS_API_URLS`（任意）
+- `OVERPASS_TIMEOUT_MS`（任意）
+- `OVERPASS_TOTAL_BUDGET_MS`（任意）
+- `PLACES_NEARBY_TIMEOUT_MS`（任意）
+- `PLACES_DETAILS_TIMEOUT_MS`（任意）
+- `PLACES_TOTAL_BUDGET_MS`（任意）
 - `ROUTE_BUFFER_KM`（任意）
 
 推奨:

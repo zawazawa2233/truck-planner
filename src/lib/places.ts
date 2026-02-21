@@ -33,7 +33,7 @@ type PlaceDetailsResponse = {
 
 function samplePoints(route: RouteSummary): Array<{ lat: number; lng: number }> {
   const out: Array<{ lat: number; lng: number }> = [];
-  const stepKm = Math.max(60, Math.ceil(route.totalDistanceKm / 6));
+  const stepKm = Math.max(90, Math.ceil(route.totalDistanceKm / 3));
   let next = 0;
   for (const p of route.points) {
     if (p.cumulativeDistanceKm >= next) {
@@ -41,7 +41,7 @@ function samplePoints(route: RouteSummary): Array<{ lat: number; lng: number }> 
       next += stepKm;
     }
   }
-  return out.slice(0, 6);
+  return out.slice(0, 3);
 }
 
 function inferTags(name: string): { isSaPa: boolean; isMichiNoEki: boolean; isExpresswayRest: boolean } {
@@ -93,7 +93,11 @@ function matchEquipmentFilter(
   return true;
 }
 
-async function fetchPlaceDetails(key: string, placeId: string): Promise<PlaceDetailsResponse['result'] | undefined> {
+async function fetchPlaceDetails(
+  key: string,
+  placeId: string,
+  timeoutMs: number
+): Promise<PlaceDetailsResponse['result'] | undefined> {
   try {
     const url = new URL('https://maps.googleapis.com/maps/api/place/details/json');
     url.searchParams.set('place_id', placeId);
@@ -101,7 +105,6 @@ async function fetchPlaceDetails(key: string, placeId: string): Promise<PlaceDet
     url.searchParams.set('fields', 'name,formatted_address,types,opening_hours');
     url.searchParams.set('key', key);
 
-    const timeoutMs = 8000;
     const res = await fetchWithTimeout(url.toString(), undefined, timeoutMs);
     if (!res.ok) return undefined;
     const body = (await res.json()) as PlaceDetailsResponse;
@@ -116,8 +119,6 @@ function buildKeywords(filter: FacilityTypeFilter): string[] {
   const out = new Set<string>();
   if (filter.saPa || filter.expresswayRest) {
     out.add('サービスエリア');
-    out.add('パーキングエリア');
-    out.add('ハイウェイオアシス');
   }
   if (filter.michiNoEki) {
     out.add('道の駅');
@@ -142,10 +143,17 @@ export async function fetchRestCandidatesFromGooglePlaces(input: {
   const keywords = buildKeywords(input.facilityTypes);
   const all: StopCandidate[] = [];
   const seen = new Set<string>();
-  const timeoutMs = 8000;
+  const nearbyTimeoutMs = Number(process.env.PLACES_NEARBY_TIMEOUT_MS ?? '4500');
+  const detailsTimeoutMs = Number(process.env.PLACES_DETAILS_TIMEOUT_MS ?? '2500');
+  const totalBudgetMs = Number(process.env.PLACES_TOTAL_BUDGET_MS ?? '8000');
+  const deadline = Date.now() + totalBudgetMs;
+  const needsDetails =
+    input.equipment.shower || input.equipment.open24h || input.equipment.convenience || input.equipment.largeParking;
 
   for (const p of points) {
+    if (Date.now() >= deadline) break;
     for (const kw of keywords) {
+      if (Date.now() >= deadline) break;
       const url = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json');
       url.searchParams.set('location', `${p.lat},${p.lng}`);
       url.searchParams.set('radius', '12000');
@@ -155,10 +163,12 @@ export async function fetchRestCandidatesFromGooglePlaces(input: {
 
       let res: Response;
       try {
-        res = await fetchWithTimeout(url.toString(), undefined, timeoutMs);
+        const remainingMs = deadline - Date.now();
+        if (remainingMs <= 0) break;
+        res = await fetchWithTimeout(url.toString(), undefined, Math.min(nearbyTimeoutMs, remainingMs));
       } catch (e) {
         if (e instanceof Error && e.name === 'AbortError') {
-          throw new Error(timeoutErrorLabel('Places NearbySearch', timeoutMs));
+          throw new Error(timeoutErrorLabel('Places NearbySearch', nearbyTimeoutMs));
         }
         throw e;
       }
@@ -166,7 +176,8 @@ export async function fetchRestCandidatesFromGooglePlaces(input: {
       const body = (await res.json()) as NearbyResponse;
       if (body.status !== 'OK' && body.status !== 'ZERO_RESULTS') continue;
 
-      for (const r of body.results) {
+      for (const r of body.results.slice(0, 6)) {
+        if (Date.now() >= deadline || all.length >= 20) break;
         const lat = r.geometry?.location?.lat;
         const lng = r.geometry?.location?.lng;
         if (lat == null || lng == null) continue;
@@ -177,7 +188,10 @@ export async function fetchRestCandidatesFromGooglePlaces(input: {
         const pos = locateOnRoute(input.route, { lat, lng });
         if (pos.distanceFromRouteKm > 12) continue;
 
-        const details = await fetchPlaceDetails(key, r.place_id);
+        const details =
+          needsDetails && deadline - Date.now() > 500
+            ? await fetchPlaceDetails(key, r.place_id, Math.min(detailsTimeoutMs, deadline - Date.now()))
+            : undefined;
         const eq = inferEquipment(r.name, r.types, details);
         if (!matchEquipmentFilter(eq, input.equipment)) continue;
 

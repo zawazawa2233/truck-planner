@@ -90,7 +90,15 @@ export async function fetchRestCandidatesFromOverpass(input: {
   let body: OverpassResponse | null = null;
   let lastError = '';
   const timeoutMs = Number(process.env.OVERPASS_TIMEOUT_MS ?? '12000');
+  const totalBudgetMs = Number(process.env.OVERPASS_TOTAL_BUDGET_MS ?? '14000');
+  const deadline = Date.now() + totalBudgetMs;
   for (const endpoint of endpoints) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) {
+      lastError = `Overpass API失敗: total timeout (${totalBudgetMs}ms)`;
+      break;
+    }
+    const thisTimeout = Math.max(4000, Math.min(timeoutMs, remainingMs));
     try {
       const res = await fetchWithTimeout(
         endpoint,
@@ -99,7 +107,7 @@ export async function fetchRestCandidatesFromOverpass(input: {
           headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
           body: query
         },
-        timeoutMs
+        thisTimeout
       );
       if (!res.ok) {
         lastError = `Overpass API失敗(${endpoint}): ${res.status}`;
@@ -109,7 +117,7 @@ export async function fetchRestCandidatesFromOverpass(input: {
       break;
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') {
-        lastError = timeoutErrorLabel(`Overpass API失敗(${endpoint})`, timeoutMs);
+        lastError = timeoutErrorLabel(`Overpass API失敗(${endpoint})`, thisTimeout);
         continue;
       }
       lastError = `Overpass API失敗(${endpoint}): ${e instanceof Error ? e.message : String(e)}`;
@@ -167,7 +175,7 @@ function buildEndpointPriorityList(raw: string): string[] {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
-  const priorityHosts = ['overpass.kumi.systems', 'overpass-api.de', 'lz4.overpass-api.de', 'z.overpass-api.de'];
+  const priorityHosts = ['overpass-api.de', 'lz4.overpass-api.de', 'z.overpass-api.de', 'overpass.kumi.systems'];
 
   return endpoints.sort((a, b) => hostPriorityScore(a, priorityHosts) - hostPriorityScore(b, priorityHosts));
 }
